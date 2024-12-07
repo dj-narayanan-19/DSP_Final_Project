@@ -4,7 +4,7 @@ from scipy.signal import butter, lfilter, filtfilt
 
 
 class AnimalEventDetector:
-    def __init__(self, amplitude_threshold=0.1, min_event_duration=100, sample_rate=44100, band = (1000,2000)):
+    def __init__(self, amplitude_threshold=0.1, min_event_duration=100, sample_rate=44100, band = (1000,2000), ema_alpha=0.2):
         """
         Initialize the detector with parameters.
 
@@ -22,6 +22,8 @@ class AnimalEventDetector:
         self.min_event_duration = min_event_duration  # In milliseconds
         self.sample_rate = sample_rate
         self.band = band
+        self.ema_alpha = ema_alpha
+        self.ema = []
 
         self.audio_array = None
         self.events = []
@@ -43,6 +45,7 @@ class AnimalEventDetector:
         try:
             # load audio file
             audio = AudioSegment.from_file(file_path)
+            print(audio)
 
             # Get raw samples from the audio file
             samples = np.array(audio.get_array_of_samples(), dtype=np.float32)
@@ -74,6 +77,7 @@ class AnimalEventDetector:
             raise ValueError("Audio data is not loaded. Please load an audio file first.")
 
         audio_abs = np.abs(self.audio_array)  # Take absolute value of the signal
+        ema = 0 # Instantiate EMA
 
         # initialize loop variables
         event_indices = []  # To store (start_index, end_index) pairs
@@ -82,20 +86,21 @@ class AnimalEventDetector:
 
         # Loop through signal to detect audio events
         for i, amplitude in enumerate(audio_abs):
-            if amplitude > self.amplitude_threshold and not in_event:
+            ema = self.ema_alpha * amplitude + (1-self.ema_alpha) * ema
+            self.ema.append(ema)
+            if ema > self.amplitude_threshold and not in_event:
                 # Rising edge detected
                 in_event = True
                 start_index = i
-            elif amplitude <= self.amplitude_threshold and in_event:
+            elif ema <= self.amplitude_threshold and in_event:
                 # Falling edge detected
-                in_event = False
                 end_index = i
-
                 # find how long the event is in ms
                 event_duration_ms = (end_index - start_index) / self.sample_rate * 1000
 
                 # make sure the event is
                 if event_duration_ms >= self.min_event_duration:
+                    in_event = False
                     event_indices.append((start_index, end_index))
 
         self.events = event_indices
@@ -176,7 +181,7 @@ class AnimalEventDetector:
 
         return filtered_audio
 
-if __name__ == "__main__":
+def test():
     print('---testing---')
     # parameters
     file_name = "example.mp3"
@@ -220,11 +225,13 @@ if __name__ == "__main__":
         filtered_splices.append(filtered_splice)
 
         print(f"Filtered event {i + 1} processed and added to the list.")
+        print(filtered_splice)
 
     # filtered_splices now contains all the filtered event splices
     print(f"Total filtered splices: {len(filtered_splices)}")
 
-
-
-
-
+if __name__ == "__main__":
+    testing = False
+    if testing:
+        test()
+    
