@@ -62,7 +62,7 @@ class AnimalEventDetector:
         except Exception as e:
             raise ValueError(f"Problem importing audio file: {e}")
 
-    def detect_events(self):
+    def detect_events(self, filter=False):
         """
         Detect rising and falling edges in the audio signal based on amplitude threshold.
 
@@ -76,7 +76,10 @@ class AnimalEventDetector:
         if self.audio_array is None:
             raise ValueError("Audio data is not loaded. Please load an audio file first.")
 
-        audio_abs = np.abs(self.audio_array)  # Take absolute value of the signal
+        audio = self.audio_array
+        if filter:
+            audio = self.filter_frequencies(self.audio_array)
+        audio_abs = np.abs(audio)  # Take absolute value of the signal
         ema = 0 # Instantiate EMA
 
         # initialize loop variables
@@ -84,7 +87,7 @@ class AnimalEventDetector:
         in_event = False
         start_index = None
 
-        # Loop through signal to detect audio events
+        # Loop through signal to detect audio events            
         for i, amplitude in enumerate(audio_abs):
             ema = self.ema_alpha * amplitude + (1-self.ema_alpha) * ema
             self.ema.append(ema)

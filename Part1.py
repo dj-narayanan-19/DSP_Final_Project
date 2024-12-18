@@ -8,11 +8,11 @@ import random
 import os
 
 # Folder with the MP3 files
-mp3_folder = "/Users/lindamin/Downloads/"
+mp3_folder = "../data/"
 mp3_files = {
-    "Robin_Accentor": "XC327911 - Robin Accentor - Prunella rubeculoides.mp3",
-    "Blue_fronted_Robin": "XC440510 - Blue-fronted Robin - Cinclidium frontale.mp3",
-    "Blue_Jay": "XC696752 - Blue Jay - Cyanocitta cristata.mp3",
+    "Puffin": "Puffinus_nativitatis.mp3",
+    "Peregrin": "Falco_peregrinus.mp3",
+    "Blue_Jay": "Cyanocitta_cristata.mp3",
 }
 
 # Output folder 
@@ -20,7 +20,7 @@ wav_folder = "./bird_sounds/"
 os.makedirs(wav_folder, exist_ok=True)
 
 # generate white noise
-def generate_white_noise(duration, amplitude=-20):
+def generate_white_noise(duration, amplitude=-25):
     white_noise = WhiteNoise().to_audio_segment(duration=duration * 1000)
     return white_noise - abs(amplitude)
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     full_audio, events_log = overlay_animal_sounds(background, wav_files, total_length)
 
     # Step 4: Export final audio track
-    output_file = "bird_audio_track.wav"
+    output_file = "bird_audio_track.m4a"
     full_audio.export(output_file, format="wav")
     print(f"Audio track saved to {output_file}")
 
@@ -89,4 +89,4 @@ if __name__ == "__main__":
         print(f"Bird Sound: {event['file']} | Timestamp: {event['timestamp']} sec")
 
     # Step 6: Plot spectrogram
-    plot_spectrogram(output_file)
+    # plot_spectrogram(output_file)
