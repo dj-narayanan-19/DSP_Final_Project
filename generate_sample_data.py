@@ -50,6 +50,7 @@ def plot_spectrogram(audio_path):
 
 
 if __name__ == "__main__":
+    np.random.seed(4810)
     # Ask the user for the total length of the track
     while True:
         try:
@@ -89,4 +90,4 @@ if __name__ == "__main__":
         print(f"Bird Sound: {event['file']} | Timestamp: {event['timestamp']} sec")
 
     # Step 6: Plot spectrogram
-    # plot_spectrogram(output_file)
+    plot_spectrogram(output_file)
